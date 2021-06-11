@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button id="button">Make a request</button>
+    <div id="result"></div>
+    <script src="./index.js"></script>
+    <script>
+      const button = document.getElementById("button");
+      const result = document.getElementById("result");
+
+      button.addEventListener("click", getDataHandler);
+
+      function getDataHandler() {
+        result.innerHTML = `<p>Loading...</p>`;
+        const newUser = ajax("https://jsonplaceholder.typicode.com/posts", {
+          type: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          data: JSON.stringify({
+            id: "1",
+            name: "Carole Silva",
+            username: "carsil",
+            email: "carole.silva@example.com",
+          }),
+        });
+
+        Promise.all(newUser)
+          .catch(err => console.log(err))
+          .then(([res]) => JSON.parse(res))
+          .then(user => {
+            result.innerHTML = `
+              <p>${user.name}</p>
+              <p>${user.username}</p>
+              <p>${user.email}</p>
+          `;
+          });
+      }
+    </script>
+  </body>
+</html>
