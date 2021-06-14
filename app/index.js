@@ -1,44 +1,59 @@
-function ajax(url, { type = "GET", headers = {}, data = null } = {}) {
-  return new Promise((resolve, reject) => {
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-      if (this.readyState === this.DONE) {
-        let status = this.status;
-        if (status === 0 || (status >= 200 && status < 400)) {
-          resolve(this.responseText);
-        } else {
-          reject(this.statusText);
-        }
-      }
-    };
+const button = document.getElementById("button");
+const result = document.getElementById("result");
 
-    xhttp.open(type, url, true);
+button.addEventListener("click", getDataHandler);
 
-    xhttp.onerror = function () {
-      reject(new Error("Internet Error!"));
-    };
+function getDataHandler() {
+  result.innerHTML = `<p>Loading...</p>`;
 
-    for (let header in headers) {
-      xhttp.setRequestHeader(header, headers[header]);
-    }
-
-    xhttp.send(data);
+  const newUser = ajax("https://jsonplaceholder.typicode.com/posts", {
+    type: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: JSON.stringify({
+      id: "1",
+      name: "Leanne Graham",
+      username: "Bret",
+      email: "Sincere@april.biz",
+    }),
   });
+
+  newUser.then(res => {
+    const user = JSON.parse(res);
+    result.innerHTML = `
+              <p>${user.name}</p>
+              <p>${user.username}</p>
+              <p>${user.email}</p>
+          `;
+  });
+  const p1 = new CustomPromise(resolve => {
+    resolve("result1");
+  });
+
+  const p2 = new CustomPromise(resolve => {
+    resolve("result2");
+  });
+
+  const p3 = new CustomPromise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error("throw error"));
+    }, 3000);
+  });
+
+  p3.then(res => {
+    console.log(res);
+  }).catch(err => {
+    console.log(err);
+  });
+
+  CustomPromise.all(p1, p2, newUser)
+    .then(res => {
+      console.log(res);
+      return res[2];
+    })
+    .then(res => {
+      console.log(JSON.parse(res));
+    })
+    .catch(err => console.log(err));
 }
-
-Promise.all = (...args) => {
-  return new Promise((resolve, reject) => {
-    let arr = Array.isArray(...args) ? Array.from(...args) : args;
-    let count = arr.length;
-    let results = [];
-
-    arr.map((item, i) => {
-      Promise.resolve(item)
-        .then(res => {
-          results[i] = res;
-          if (--count === 0) resolve(results);
-        })
-        .catch(err => reject(err));
-    });
-  });
-};
